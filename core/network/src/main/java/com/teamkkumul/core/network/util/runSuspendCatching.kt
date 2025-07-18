@@ -14,3 +14,10 @@ inline fun <T, R> T.runSuspendCatching(block: T.() -> R): Result<R> {
         Result.failure(e)
     }
 }
+
+inline fun <T, R> T.runHandledCatching(block: T.() -> R): Result<R> {
+    return runSuspendCatching(block).fold(
+        onSuccess = { Result.success(it) },
+        onFailure = { Result.failure(it /*.toCustomError()*/) },
+    )
+}
