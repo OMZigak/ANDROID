@@ -45,4 +45,6 @@ dependencies {
     implementation(libs.dagger.hilt)
     implementation(libs.androidx.exifinterface)
     ksp(libs.dagger.hilt.compiler)
+
+    implementation(libs.timber)
 }
