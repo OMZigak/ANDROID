@@ -2,6 +2,7 @@ package com.teamkkumul.core.network.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.teamkkumul.core.network.BuildConfig.KKUMUL_BASE_URL
+import com.teamkkumul.core.network.authenticator.TokenAuthenticator
 import com.teamkkumul.core.network.interceptor.TokenInterceptor
 import dagger.Module
 import dagger.Provides
@@ -37,10 +38,12 @@ object RetrofitModule {
     fun provideOkHttpClient(
         tokenInterceptor: TokenInterceptor,
         loggingInterceptor: HttpLoggingInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
     ): OkHttpClient =
         OkHttpClient.Builder()
             .addInterceptor(tokenInterceptor)
             .addInterceptor(loggingInterceptor)
+            .authenticator(tokenAuthenticator)
             .build()
 
     @Provides
@@ -61,9 +64,9 @@ object RetrofitModule {
     @Singleton
     @Provides
     @KKUMUL
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit =
+    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit =
         Retrofit.Builder()
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .baseUrl(KKUMUL_BASE_URL)
             .client(okHttpClient)
             .build()
@@ -79,9 +82,11 @@ object RetrofitModule {
     @Provides
     @Singleton
     @WithoutTokenInterceptor
-    fun provideRetrofitWithoutTokenInterceptor(@WithoutTokenInterceptor okHttpClient: OkHttpClient): Retrofit =
+    fun provideRetrofitWithoutTokenInterceptor(
+        @WithoutTokenInterceptor okHttpClient: OkHttpClient, json: Json,
+    ): Retrofit =
         Retrofit.Builder()
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .baseUrl(KKUMUL_BASE_URL)
             .client(okHttpClient)
             .build()
