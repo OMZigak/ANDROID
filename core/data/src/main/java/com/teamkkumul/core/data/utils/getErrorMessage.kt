@@ -4,6 +4,7 @@ import com.teamkkumul.core.network.dto.response.BaseResponse
 import com.teamkkumul.model.network.Error
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
+import timber.log.Timber
 import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -27,12 +28,15 @@ private fun parseErrorMessage(errorBody: String): String =
         UNKNOWN_ERROR_MESSAGE
     }
 
-fun Throwable.toCustomError(): Throwable = when (this) {
-    is HttpException -> Error.ApiError(this.getErrorMessage())
-    is UnknownHostException -> Error.NetWorkConnectError(NETWORK_CONNECT_ERROR_MESSAGE)
-    is ConnectException -> Error.NetWorkConnectError(INTERNET_CONNECTION_ERROR_MESSAGE)
-    is SocketTimeoutException -> Error.TimeOutError(TIMEOUT_ERROR_MESSAGE)
-    else -> Error.UnknownError(this.message ?: UNKNOWN_ERROR_MESSAGE)
+fun Throwable.toCustomError(): Throwable {
+    Timber.e(this)
+    return when (this) {
+        is HttpException -> Error.ApiError(this.getErrorMessage())
+        is UnknownHostException -> Error.NetWorkConnectError(NETWORK_CONNECT_ERROR_MESSAGE)
+        is ConnectException -> Error.NetWorkConnectError(INTERNET_CONNECTION_ERROR_MESSAGE)
+        is SocketTimeoutException -> Error.TimeOutError(TIMEOUT_ERROR_MESSAGE)
+        else -> Error.UnknownError(this.message ?: UNKNOWN_ERROR_MESSAGE)
+    }
 }
 
 fun <T> Throwable.handleThrowable(): Result<T> = Result.failure(this.toCustomError())
